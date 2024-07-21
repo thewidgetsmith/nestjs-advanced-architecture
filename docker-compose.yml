@@ -1,0 +1,16 @@
+####
+# Defines development services stack for this project
+#
+####
+
+services:
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: pass123
+
+volumes:
+  db_data:
