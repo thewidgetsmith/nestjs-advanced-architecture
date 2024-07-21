@@ -9,7 +9,7 @@ import { AlarmRepository } from '@app/alarms/application/ports/alarm.repository'
 export class InMemoryAlarmRepository implements AlarmRepository {
   private readonly alarms = new Map<string, AlarmEntity>();
 
-  async findAll(): Promise<Alarm[]> {
+  async findMany(): Promise<Alarm[]> {
     const entities = Array.from(this.alarms.values());
     return entities.map((it) => AlarmMapper.toDomain(it));
   }

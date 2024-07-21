@@ -42,7 +42,7 @@ describe('InMemoryAlarmRepository', () => {
   // It is then inaccessible for direct manipulation. Therefore, the testing
   // strategy is multi-step. First, save new alarms then retrieve them.
 
-  describe('save and findAll methods', () => {
+  describe('save and findMany methods', () => {
     it('should add a new alarm, test, then return the alarms', async () => {
       expect.hasAssertions();
 
@@ -54,7 +54,7 @@ describe('InMemoryAlarmRepository', () => {
       await repository.save(alarm2);
       await repository.save(alarm3);
 
-      const alarms = await repository.findAll();
+      const alarms = await repository.findMany();
 
       expect(alarms.length).toBe(3);
       expect(alarms[0].name).toEqual('Test Alarm 1');

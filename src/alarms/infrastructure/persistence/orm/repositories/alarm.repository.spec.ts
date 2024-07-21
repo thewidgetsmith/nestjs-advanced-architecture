@@ -62,11 +62,11 @@ describe('OrmAlarmRepository', () => {
     expect(repository).toBeDefined();
   });
 
-  describe('findAll method', () => {
+  describe('findMany method', () => {
     it('should return an array of alarms', async () => {
       expect.hasAssertions();
 
-      const alarms = await repository.findAll();
+      const alarms = await repository.findMany();
 
       expect(alarms.length).toBe(3);
       expect(alarms[0].name).toEqual('Test Alarm 1');

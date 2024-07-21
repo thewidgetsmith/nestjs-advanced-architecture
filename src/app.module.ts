@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 
 import { ApplicationBootstrapOptions } from './common/interfaces/application-bootstrap-options.interface';
 import { AlarmsInfrastructureModule } from './alarms/infrastructure/alarms-infrastructure.module';
@@ -10,7 +11,7 @@ import { AppService } from './app.service';
 
 @Module({
   controllers: [AppController],
-  imports: [CoreModule],
+  imports: [CqrsModule.forRoot(), CoreModule],
   providers: [AppService],
 })
 export class AppModule {

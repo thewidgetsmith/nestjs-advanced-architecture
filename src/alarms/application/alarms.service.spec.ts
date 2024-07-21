@@ -1,43 +1,50 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AlarmFactory } from '@app/alarms/domain/alarm.factory';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 
-import { AlarmRepository } from './ports/alarm.repository';
+import { AlarmSeverity } from '@app/alarms/domain/value-objects/alarm-severity';
+
 import { AlarmsService } from './alarms.service';
 import { CreateAlarmCommand } from './commands/create-alarm.command';
-import { AlarmSeverity } from '../domain/value-objects/alarm-severity';
+import { FindManyAlarmsQuery } from './queries/find-many-alarms.query';
 
 describe('AlarmsService', () => {
-  let repository: AlarmRepository;
   let service: AlarmsService;
+  let commandBus: CommandBus;
+  let queryBus: QueryBus;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        AlarmFactory,
         AlarmsService,
         {
-          provide: AlarmRepository,
+          provide: CommandBus,
           useValue: {
-            findAll: jest.fn(),
-            save: jest.fn(),
+            execute: jest.fn(),
           },
         },
+        {
+          provide: QueryBus,
+          useValue: {
+            execute: jest.fn(),
+          },
+        }
       ],
     }).compile();
 
-    repository = module.get<AlarmRepository>(AlarmRepository);
     service = module.get<AlarmsService>(AlarmsService);
+    commandBus = module.get<CommandBus>(CommandBus);
+    queryBus = module.get<QueryBus>(QueryBus);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  describe('findAll method', () => {
+  describe('findMany method', () => {
     it('should return an array of alarms', async () => {
       expect.hasAssertions();
 
-      jest.spyOn(repository, 'findAll').mockResolvedValueOnce([
+      jest.spyOn(queryBus, 'execute').mockResolvedValueOnce([
         {
           uuid: '00000000-0000-0000-0000-000000000001',
           severity: new AlarmSeverity('high'),
@@ -55,12 +62,14 @@ describe('AlarmsService', () => {
         }
       ]);
 
-      const alarms = await service.findAll();
+      const query = new FindManyAlarmsQuery();
+      const alarms = await service.findMany(query);
 
       expect(alarms.length).toBe(3);
       expect(alarms[0].name).toEqual('Test Alarm 1');
       expect(alarms[1].name).toEqual('Test Alarm 2');
       expect(alarms[2].name).toEqual('Test Alarm 3');
+      expect(queryBus.execute).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -73,7 +82,7 @@ describe('AlarmsService', () => {
         severity: 'high',
       };
 
-      jest.spyOn(repository, 'save').mockResolvedValueOnce({
+      jest.spyOn(commandBus, 'execute').mockResolvedValueOnce({
         // overwrite uuid with a fixed value
         uuid: '00000000-0000-0000-0000-000000000000',
         severity: new AlarmSeverity('high'),
@@ -84,7 +93,7 @@ describe('AlarmsService', () => {
 
       expect(newAlarm.name).toEqual(cmd.name);
       expect(newAlarm.severity.value).toBe('high');
-      expect(repository.save).toHaveBeenCalledTimes(1);
+      expect(commandBus.execute).toHaveBeenCalledTimes(1);
     });
   });
 });

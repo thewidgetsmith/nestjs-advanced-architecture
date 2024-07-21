@@ -14,7 +14,7 @@ export class OrmAlarmRepository implements AlarmRepository {
     private readonly alarmRepository: Repository<AlarmEntity>
   ) {}
 
-  async findAll(): Promise<Alarm[]> {
+  async findMany(): Promise<Alarm[]> {
     const entities = await this.alarmRepository.find();
     return entities.map((it) => AlarmMapper.toDomain(it));
   }

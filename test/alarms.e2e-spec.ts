@@ -2,19 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 
-import { AlarmsModule } from '@app/alarms/application/alarms.module';
-import { AlarmsInfrastructureModule } from '@app/alarms/infrastructure/alarms-infrastructure.module';
+import { AppModule } from '@app/app.module';
 
 describe('AlarmsController (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        AlarmsModule.withInfrastructure(
-          AlarmsInfrastructureModule.use('in-memory'),
-        ),
-      ],
+      imports: [AppModule.register({ driver: 'in-memory' })],
     }).compile();
 
     app = moduleFixture.createNestApplication();

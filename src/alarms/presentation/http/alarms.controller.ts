@@ -2,6 +2,8 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 
 import { AlarmsService } from '@app/alarms/application/alarms.service';
 import { CreateAlarmCommand } from '@app/alarms/application/commands/create-alarm.command';
+import { FindManyAlarmsQuery } from '@app/alarms/application/queries/find-many-alarms.query';
+
 import { CreateAlarmDto } from './dto/create-alarm.dto';
 
 @Controller('alarms')
@@ -18,7 +20,8 @@ export class AlarmsController {
   }
 
   @Get()
-  findAll() {
-    return this.alarmsService.findAll();
+  findMany() {
+    const query = new FindManyAlarmsQuery();
+    return this.alarmsService.findMany(query);
   }
 }
