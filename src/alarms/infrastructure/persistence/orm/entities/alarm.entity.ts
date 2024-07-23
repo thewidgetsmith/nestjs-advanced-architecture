@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { AlarmItemEntity } from './alarm-item.entity';
 
 @Entity('alarms')
 export class AlarmEntity {
@@ -10,6 +11,15 @@ export class AlarmEntity {
 
   @Column()
   severity: string;
+
+  @Column()
+  triggeredAt: Date;
+
+  @Column()
+  acknowledgedAt: Date;
+
+  @OneToMany(() => AlarmItemEntity, (event) => event.alarm, {cascade: true})
+  items: AlarmItemEntity[];
 
   constructor(name: string, severity?: string, uuid?: string);
   constructor(name: string, severity: string, uuid?: string);

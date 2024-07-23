@@ -47,17 +47,17 @@ describe('AlarmsService', () => {
       jest.spyOn(queryBus, 'execute').mockResolvedValueOnce([
         {
           uuid: '00000000-0000-0000-0000-000000000001',
-          severity: new AlarmSeverity('high'),
+          severity: AlarmSeverity.fromValue('HIGH'),
           name: 'Test Alarm 1',
         },
         {
           uuid: '00000000-0000-0000-0000-000000000002',
-          severity: new AlarmSeverity('medium'),
+          severity: AlarmSeverity.fromValue('MEDIUM'),
           name: 'Test Alarm 2',
         },
         {
           uuid: '00000000-0000-0000-0000-000000000003',
-          severity: new AlarmSeverity('low'),
+          severity: AlarmSeverity.fromValue('LOW'),
           name: 'Test Alarm 3',
         }
       ]);
@@ -79,20 +79,20 @@ describe('AlarmsService', () => {
 
       const cmd: CreateAlarmCommand = {
         name: 'Test Alarm',
-        severity: 'high',
+        severity: 'HIGH',
       };
 
       jest.spyOn(commandBus, 'execute').mockResolvedValueOnce({
         // overwrite uuid with a fixed value
-        uuid: '00000000-0000-0000-0000-000000000000',
-        severity: new AlarmSeverity('high'),
+        uuid: '00000000-0000-0000-0000-000000000001',
+        severity: new AlarmSeverity('HIGH'),
         name: cmd.name,
       });
 
       const newAlarm = await service.create(cmd);
 
       expect(newAlarm.name).toEqual(cmd.name);
-      expect(newAlarm.severity.value).toBe('high');
+      expect(newAlarm.severity.value).toBe('HIGH');
       expect(commandBus.execute).toHaveBeenCalledTimes(1);
     });
   });

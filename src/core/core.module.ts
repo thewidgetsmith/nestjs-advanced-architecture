@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MongooseModule } from '@nestjs/mongoose';
 
 import { ApplicationBootstrapOptions } from '@app/common/interfaces/application-bootstrap-options.interface';
+import { EVENT_STORE_CONNECTION } from './core.constants';
 
-@Module({
-  imports: [],
-})
+@Module({})
 export class CoreModule {
   static forRoot(options: ApplicationBootstrapOptions) {
     const imports = [];
@@ -21,6 +21,15 @@ export class CoreModule {
           username: 'postgres',
           autoLoadEntities: true,
           synchronize: true,
+        }),
+      );
+    }
+
+    if (options.eventStore === 'mongodb') {
+      imports.push(
+        MongooseModule.forRoot('mongodb://localhost:27018/vf-event-store', {
+          connectionName: EVENT_STORE_CONNECTION,
+          directConnection: true,
         }),
       );
     }

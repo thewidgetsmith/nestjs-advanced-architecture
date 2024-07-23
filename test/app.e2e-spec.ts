@@ -9,7 +9,9 @@ describe('AppController (e2e)', () => {
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule.register({ driver: 'in-memory' })],
+      imports: [
+        AppModule.register({ driver: 'in-memory', eventStore: 'in-memory' }),
+      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();

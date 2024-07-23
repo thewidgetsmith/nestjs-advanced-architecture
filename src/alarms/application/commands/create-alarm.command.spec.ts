@@ -1,8 +1,8 @@
 import { EventBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 
-import { AlarmFactory } from '@app/alarms/domain/alarm.factory';
-import { AlarmRepository } from '@app/alarms/application/ports/alarm.repository';
+import { AlarmFactory } from '@app/alarms/domain/factories/alarm.factory';
+import { CreateAlarmRepository } from '@app/alarms/application/ports/create-alarm.repository';
 
 import {
   CreateAlarmCommand,
@@ -12,17 +12,32 @@ import {
 describe('CreateAlarmCommand handling', () => {
   describe('CreateAlarmCommand', () => {
     it('should create a CreateAlarmCommand instance', () => {
-      const cmd = new CreateAlarmCommand('Test Alarm', 'High');
+      const { name, severity, triggeredAt, items } = {
+        name: 'Test Alarm',
+        severity: 'High',
+        triggeredAt: new Date(),
+        items: [
+          {
+            name: 'Test Item 1',
+            type: 'TYPE_1',
+          },
+        ],
+      };
+
+      const itemsCount = items.length;
+      const cmd = new CreateAlarmCommand(name, severity, triggeredAt, items);
 
       expect(cmd instanceof CreateAlarmCommand).toBe(true);
-      expect(cmd.name).toBe('Test Alarm');
-      expect(cmd.severity).toBe('High');
+      expect(cmd.items).toHaveLength(itemsCount);
+      expect(cmd.triggeredAt).toBe(triggeredAt);
+      expect(cmd.severity).toBe(severity);
+      expect(cmd.name).toBe(name);
     });
   });
 
   describe('CreateAlarmCommandHandler', () => {
     let handler: CreateAlarmCommandHandler;
-    let repository: AlarmRepository;
+    let repository: CreateAlarmRepository;
     let eventBus: EventBus;
 
     beforeEach(async () => {
@@ -31,9 +46,8 @@ describe('CreateAlarmCommand handling', () => {
           AlarmFactory,
           CreateAlarmCommandHandler,
           {
-            provide: AlarmRepository,
+            provide: CreateAlarmRepository,
             useValue: {
-              findMany: jest.fn(),
               save: jest.fn(),
             },
           },
@@ -47,7 +61,7 @@ describe('CreateAlarmCommand handling', () => {
       }).compile();
 
       handler = mod.get(CreateAlarmCommandHandler);
-      repository = mod.get(AlarmRepository);
+      repository = mod.get(CreateAlarmRepository);
       eventBus = mod.get(EventBus);
     });
 
@@ -57,17 +71,31 @@ describe('CreateAlarmCommand handling', () => {
       });
 
       it('should return with a new test alarm', async () => {
-        const { name, severity } = { name: 'Test Alarm', severity: 'high' };
+        const { name, severity, triggeredAt, items } = {
+          name: 'Test Alarm',
+          severity: 'High',
+          triggeredAt: new Date(),
+          items: [
+            {
+              name: 'Test Item 1',
+              type: 'TYPE_1',
+            },
+          ],
+        };
 
-        const alarm = new AlarmFactory().create(name, severity);
+        const optionals = { items, triggeredAt };
+        const alarm = new AlarmFactory().create(name, severity, optionals);
         jest.spyOn(repository, 'save').mockResolvedValueOnce(alarm);
 
-        const cmd = new CreateAlarmCommand(name, severity);
+        const cmd = new CreateAlarmCommand(name, severity, triggeredAt, items);
         const response = await handler.execute(cmd);
 
-        expect(response.name).toBe(name);
-        expect(response.severity.value).toBe(severity);
         expect(repository.save).toHaveBeenCalledTimes(1);
+        expect(response.getAlarmItems()).toHaveLength(items.length);
+        expect(response.triggeredAt.getTime()).toBe(triggeredAt.getTime());
+        expect(response.severity.value).toBe(severity);
+        expect(response.uuid).toBe(alarm.uuid);
+        expect(response.name).toBe(name);
       });
     });
   });

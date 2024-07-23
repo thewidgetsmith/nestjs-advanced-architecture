@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 
-import { AlarmFactory } from '@app/alarms/domain/alarm.factory';
+import { AlarmFactory } from '@app/alarms/domain/factories/alarm.factory';
 
 import {
   AlarmCreatedEvent,
@@ -10,11 +10,11 @@ import {
 describe('AlarmCreatedEvent handling', () => {
   describe('AlarmCreatedEvent', () => {
     it('should create an AlarmCreatedEvent instance', () => {
-      const alarm = new AlarmFactory().create('Test Alarm', 'high');
+      const alarm = new AlarmFactory().create('Test Alarm', 'HIGH');
       const event = new AlarmCreatedEvent(alarm);
 
       expect(event instanceof AlarmCreatedEvent).toBe(true);
-      expect(event.alarm.severity.value).toBe('high');
+      expect(event.alarm.severity.value).toBe('HIGH');
       expect(event.alarm.name).toBe('Test Alarm');
     });
   });
@@ -24,10 +24,7 @@ describe('AlarmCreatedEvent handling', () => {
 
     beforeEach(async () => {
       const mod = await Test.createTestingModule({
-        providers: [
-          AlarmFactory,
-          AlarmCreatedEventHandler,
-        ],
+        providers: [AlarmFactory, AlarmCreatedEventHandler],
       }).compile();
 
       handler = mod.get(AlarmCreatedEventHandler);
@@ -35,9 +32,13 @@ describe('AlarmCreatedEvent handling', () => {
 
     describe('handle', () => {
       it('should be called', async () => {
-        const { name, severity } = { name: 'Test Alarm', severity: 'high' };
+        const { name, severity, triggeredAt } = {
+          name: 'Test Alarm',
+          severity: 'high',
+          triggeredAt: new Date(),
+        };
 
-        const alarm = new AlarmFactory().create(name, severity);
+        const alarm = new AlarmFactory().create(name, severity, { triggeredAt });
         const event = new AlarmCreatedEvent(alarm);
 
         handler.handle(event);

@@ -5,7 +5,9 @@ import { Repository } from 'typeorm';
 import { Alarm } from '@app/alarms/domain/alarm';
 import { AlarmEntity } from '@app/alarms/infrastructure/persistence/orm/entities/alarm.entity';
 import { AlarmSeverity } from '@app/alarms/domain/value-objects/alarm-severity';
-import { OrmAlarmRepository } from './alarm.repository';
+import { OrmFindAlarmsRepository } from './find-alarms.repository';
+import { FindManyAlarmsQuery } from '@app/alarms/application/queries/find-many-alarms.query';
+import { MaterializedAlarmView } from '../schemas/materialized-alarm-view.schema';
 
 const testAlarm1 = 'Test Alarm 1';
 const testSeverity1 = 'high';
@@ -34,25 +36,30 @@ const alarmsArray = [
   ),
 ];
 
-describe('OrmAlarmRepository', () => {
-  let repository: OrmAlarmRepository;
+describe('OrmFindAlarmsRepository', () => {
+  let repository: OrmFindAlarmsRepository;
   let ormRepo: Repository<AlarmEntity>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        OrmAlarmRepository,
+        OrmFindAlarmsRepository,
+        {
+          provide: MaterializedAlarmView,
+          useValue: {
+            find: jest.fn().mockResolvedValue(alarmsArray),
+          },
+        },
         {
           provide: getRepositoryToken(AlarmEntity),
           useValue: {
             find: jest.fn().mockResolvedValue(alarmsArray),
-            save: jest.fn().mockResolvedValue(oneAlarm),
           },
         },
       ],
     }).compile();
 
-    repository = module.get<OrmAlarmRepository>(OrmAlarmRepository);
+    repository = module.get<OrmFindAlarmsRepository>(OrmFindAlarmsRepository);
     ormRepo = module.get<Repository<AlarmEntity>>(
       getRepositoryToken(AlarmEntity),
     );
@@ -66,30 +73,13 @@ describe('OrmAlarmRepository', () => {
     it('should return an array of alarms', async () => {
       expect.hasAssertions();
 
-      const alarms = await repository.findMany();
+      const query = new FindManyAlarmsQuery();
+      const alarms = await repository.findMany(query);
 
       expect(alarms.length).toBe(3);
       expect(alarms[0].name).toEqual('Test Alarm 1');
       expect(alarms[1].name).toEqual('Test Alarm 2');
       expect(alarms[2].name).toEqual('Test Alarm 3');
-    });
-  });
-
-  describe('create method', () => {
-    it('should add a new alarm', async () => {
-      expect.hasAssertions();
-
-      const alarm: Alarm = {
-        uuid: '00000000-0000-0000-0000-000000000004',
-        severity: new AlarmSeverity('high'),
-        name: 'Test Alarm 4',
-      };
-
-      const newAlarm = await repository.save(alarm);
-
-      expect(ormRepo.save).toHaveBeenCalledTimes(1);
-      expect(newAlarm.name).toBe('Test Alarm 1');
-      expect(newAlarm.uuid).toBeDefined();
     });
   });
 });

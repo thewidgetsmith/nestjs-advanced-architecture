@@ -1,16 +1,29 @@
 ####
 # Defines development services stack for this project
 #
+# - read-db: MongoDB database for read operations
+# - write-db: PostgreSQL database for write operations
 ####
 
 services:
-  db:
-    image: postgres
-    restart: always
+  read-db:
+    image: mongo
     ports:
-      - "5432:5432"
+      - 27017:27017
+    environment:
+      - MONGODB_DATABASE="vf-read-db"
+    volumes:
+      - db-data-read:/data/db
+
+  write-db:
+    image: postgres
+    ports:
+      - '5432:5432'
     environment:
       POSTGRES_PASSWORD: pass123
+    volumes:
+      - db-data-write:/var/lib/postgresql/data
 
 volumes:
-  db_data:
+  db-data-read:
+  db-data-write:

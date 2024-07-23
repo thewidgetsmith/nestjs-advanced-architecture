@@ -1,7 +1,7 @@
 import { DynamicModule, Module, Type } from '@nestjs/common';
 
 import { AlarmCreatedEventHandler } from '@app/alarms/domain/events/alarm-created.event';
-import { AlarmFactory } from '@app/alarms/domain/alarm.factory';
+import { AlarmFactory } from '@app/alarms/domain/factories/alarm.factory';
 import { AlarmsController } from '@app/alarms/presentation/http/alarms.controller';
 
 import { AlarmsService } from './alarms.service';

@@ -9,7 +9,9 @@ describe('AlarmsController (e2e)', () => {
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule.register({ driver: 'in-memory' })],
+      imports: [
+        AppModule.register({ driver: 'in-memory', eventStore: 'in-memory' }),
+      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -29,7 +31,9 @@ describe('AlarmsController (e2e)', () => {
     expect.hasAssertions();
 
     const payload = { name: 'Test Alarm', severity: 'high' };
-    const response = await request(app.getHttpServer()).post('/alarms').send(payload);
+    const response = await request(app.getHttpServer())
+      .post('/alarms')
+      .send(payload);
 
     const body = response.body;
     expect(response.status).toBe(201);
